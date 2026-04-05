@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Walk in the Night — Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #1a1a2e;
+    --accent: #e94560;
+    --accent2: #f5a623;
+    --sage: #57c5b6;
+    --text: #eef2ff;
+    --muted: #8892b0;
+    --border: rgba(255,255,255,0.08);
+    --correct: #57c5b6;
+    --wrong: #e94560;
+    --card: rgba(15,52,96,0.6);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 36px 16px 80px;
+    background-image:
+      radial-gradient(ellipse at 15% 10%, rgba(233,69,96,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 90%, rgba(87,197,182,0.10) 0%, transparent 50%);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 20% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 25%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 40% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 70%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 10% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 5%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 55% 85%, rgba(255,255,255,0.4) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+    animation: fadeDown 0.7s ease both;
+    position: relative;
+    z-index: 1;
+  }
+
+  .story-tag {
+    display: inline-block;
+    background: rgba(233,69,96,0.15);
+    border: 1px solid rgba(233,69,96,0.3);
+    color: var(--accent);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 100px;
+    margin-bottom: 14px;
+  }
+
+  header h1 {
+    font-family: 'Lora', serif;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    color: var(--text);
+  }
+
+  header h1 span { color: var(--accent); }
+  header p { color: var(--muted); margin-top: 8px; font-size: 13px; }
+
+  /* Progress bar */
+  .progress-wrap {
+    width: 100%;
+    max-width: 620px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+    animation: fadeDown 0.7s 0.1s ease both;
+  }
+
+  .progress-track {
+    background: rgba(255,255,255,0.07);
+    border-radius: 100px;
+    height: 5px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 100px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+
+  .progress-text {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 8px;
+    margin-bottom: 24px;
+  }
+
+  /* Quiz card */
+  .quiz-card {
+    width: 100%;
+    max-width: 620px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px 32px 32px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .question-num {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 14px;
+    opacity: 0.8;
+  }
+
+  .question-text {
+    font-family: 'Lora', serif;
+    font-size: 1.25rem;
+    color: var(--text);
+    line-height: 1.55;
+    margin-bottom: 28px;
+  }
+
+  /* Options */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option-btn {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    background: rgba(233,69,96,0.08);
+    border-color: rgba(233,69,96,0.3);
+    transform: translateX(4px);
+  }
+
+  .option-letter {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .option-btn.correct {
+    background: rgba(87,197,182,0.15);
+    border-color: rgba(87,197,182,0.5);
+    transform: translateX(0);
+  }
+
+  .option-btn.correct .option-letter {
+    background: var(--correct);
+    color: #0a2020;
+  }
+
+  .option-btn.wrong {
+    background: rgba(233,69,96,0.12);
+    border-color: rgba(233,69,96,0.4);
+    transform: translateX(0);
+  }
+
+  .option-btn.wrong .option-letter {
+    background: var(--wrong);
+    color: white;
+  }
+
+  .option-btn.reveal-correct {
+    background: rgba(87,197,182,0.08);
+    border-color: rgba(87,197,182,0.25);
+  }
+
+  .option-btn.reveal-correct .option-letter {
+    background: rgba(87,197,182,0.3);
+    color: var(--sage);
+  }
+
+  .option-btn:disabled { cursor: default; }
+
+  /* Feedback */
+  .feedback {
+    margin-top: 18px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    display: none;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .feedback.show { display: block; }
+
+  .feedback.correct-fb {
+    background: rgba(87,197,182,0.12);
+    border: 1px solid rgba(87,197,182,0.25);
+    color: var(--sage);
+  }
+
+  .feedback.wrong-fb {
+    background: rgba(233,69,96,0.1);
+    border: 1px solid rgba(233,69,96,0.2);
+    color: #f08090;
+  }
+
+  .feedback strong { font-weight: 700; }
+
+  /* Next button */
+  .next-btn {
+    display: none;
+    margin-top: 20px;
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .next-btn:hover { background: #c73652; transform: translateY(-1px); }
+  .next-btn.show { display: block; }
+
+  /* Results screen */
+  .results {
+    display: none;
+    width: 100%;
+    max-width: 620px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 44px 32px;
+    text-align: center;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .results.show { display: block; }
+  .quiz-card.hide { display: none; }
+
+  .score-emoji { font-size: 64px; margin-bottom: 16px; }
+
+  .score-title {
+    font-family: 'Lora', serif;
+    font-size: 1.8rem;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .score-num {
+    font-size: 3.5rem;
+    font-weight: 700;
+    font-family: 'Lora', serif;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin: 16px 0;
+  }
+
+  .score-label { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+
+  .score-message {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 28px;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    opacity: 0.85;
+  }
+
+  /* Review list */
+  .review-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 14px;
+    text-align: left;
+  }
+
+  .review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 28px;
+    text-align: left;
+  }
+
+  .review-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .review-icon { flex-shrink: 0; margin-top: 1px; }
+
+  .restart-btn {
+    background: rgba(255,255,255,0.07);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 32px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  .restart-btn:hover {
+    background: rgba(233,69,96,0.1);
+    border-color: rgba(233,69,96,0.3);
+    color: var(--accent);
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  .shake { animation: shake 0.4s ease; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="story-tag">📖 Walk in the Night · Quiz</div>
+  <h1>Test Your <span>Understanding</span></h1>
+  <p>Read the story, then answer the questions below</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+</div>
+<div class="progress-text" id="progressText">Question 1 of 12</div>
+
+<div class="quiz-card" id="quizCard">
+  <div class="question-num" id="qNum">Question 1 of 12</div>
+  <div class="question-text" id="qText"></div>
+  <div class="options" id="options"></div>
+  <div class="feedback" id="feedback"></div>
+  <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question →</button>
+</div>
+
+<div class="results" id="results"></div>
+
+<script>
+const questions = [
+  {
+    q: "Where did the narrator live 10 years ago?",
+    options: ["In a big city", "In a small village", "Near the sea", "In another country"],
+    answer: 1,
+    feedback: "✅ Correct! The story starts: \"10 years ago I lived in a small village.\""
+  },
+  {
+    q: "How old was the narrator when she lived in the village?",
+    options: ["16 years old", "21 years old", "18 years old", "23 years old"],
+    answer: 2,
+    feedback: "✅ Correct! She says: \"I was only 18 years old.\""
+  },
+  {
+    q: "How old was Alex at that time?",
+    options: ["18 years old", "20 years old", "25 years old", "23 years old"],
+    answer: 3,
+    feedback: "✅ Correct! \"At that time Alex was 23 years old.\""
+  },
+  {
+    q: "What was there on Saturday night in the village?",
+    options: ["A football game", "A birthday party", "A dance party", "A film night"],
+    answer: 2,
+    feedback: "✅ Correct! \"One Saturday night there was a dance party in our village.\""
+  },
+  {
+    q: "Why was the narrator's mother worried?",
+    options: ["She didn't like Alex", "She thought it was not safe", "The party was far away", "It was raining outside"],
+    answer: 1,
+    feedback: "✅ Correct! Her mother said: \"It is not safe.\""
+  },
+  {
+    q: "What did Alex ask the narrator to do at the party?",
+    options: ["To go home", "To meet his friends", "To dance", "To have dinner"],
+    answer: 2,
+    feedback: "✅ Correct! \"Alex asked me to dance.\""
+  },
+  {
+    q: "What did Alex say after the party ended?",
+    options: ["Let's go for a walk", "Let's go for a drive", "Let's get something to eat", "Let's call your mother"],
+    answer: 1,
+    feedback: "✅ Correct! Alex said: \"Let's go for a drive.\""
+  },
+  {
+    q: "How far did the narrator walk home alone in the dark?",
+    options: ["1 km", "5 km", "10 km", "3 km"],
+    answer: 3,
+    feedback: "✅ Correct! \"I walked 3 km in the dark.\""
+  },
+  {
+    q: "Where did the narrator work when she was 20?",
+    options: ["In a hospital", "In a school", "In a small bookstore", "In a café"],
+    answer: 2,
+    feedback: "✅ Correct! \"I worked in a small bookstore.\""
+  },
+  {
+    q: "What colour was Daniel's umbrella?",
+    options: ["Black", "Blue", "Yellow", "Red"],
+    answer: 3,
+    feedback: "✅ Correct! \"He had a big red umbrella.\""
+  },
+  {
+    q: "Why did Daniel stop coming to the bookstore for two weeks?",
+    options: ["He moved to another city", "He was sick", "He had to visit his sick sister", "He was on holiday"],
+    answer: 2,
+    feedback: "✅ Correct! Daniel said: \"I had to visit my sister — she was sick.\""
+  },
+  {
+    q: "What does the narrator believe at the end of the story?",
+    options: ["Life is always easy", "Everything happens for a reason", "Love is not real", "Men are never kind"],
+    answer: 1,
+    feedback: "✅ Correct! She says: \"I believe everything happens for a reason.\""
+  }
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+let userAnswers = [];
+
+function render() {
+  const q = questions[current];
+  document.getElementById('qNum').textContent = `Question ${current + 1} of ${questions.length}`;
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('progressText').textContent = `Question ${current + 1} of ${questions.length}`;
+  document.getElementById('progressFill').style.width = `${(current / questions.length) * 100}%`;
+
+  const letters = ['A', 'B', 'C', 'D'];
+  const optionsEl = document.getElementById('options');
+  optionsEl.innerHTML = '';
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => selectAnswer(i);
+    optionsEl.appendChild(btn);
+  });
+
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  fb.textContent = '';
+
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.className = 'next-btn';
+  nextBtn.textContent = current === questions.length - 1 ? 'See Results 🎉' : 'Next Question →';
+
+  answered = false;
+
+  // Animate card
+  const card = document.getElementById('quizCard');
+  card.style.animation = 'none';
+  void card.offsetWidth;
+  card.style.animation = 'fadeUp 0.4s ease both';
+}
+
+function selectAnswer(index) {
+  if (answered) return;
+  answered = true;
+
+  const q = questions[current];
+  const btns = document.querySelectorAll('.option-btn');
+  const fb = document.getElementById('feedback');
+  const isCorrect = index === q.answer;
+
+  if (isCorrect) score++;
+  userAnswers.push({ correct: isCorrect, q: q.q, correctAnswer: q.options[q.answer] });
+
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.answer) btn.classList.add('correct');
+    if (i === index && !isCorrect) {
+      btn.classList.add('wrong');
+      btn.classList.add('shake');
+    }
+  });
+
+  fb.className = `feedback show ${isCorrect ? 'correct-fb' : 'wrong-fb'}`;
+  if (isCorrect) {
+    fb.innerHTML = q.feedback;
+  } else {
+    fb.innerHTML = `❌ Not quite. The correct answer is: <strong>"${q.options[q.answer]}"</strong>.<br>${q.feedback.replace('✅ Correct! ', '')}`;
+  }
+
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) {
+    showResults();
+  } else {
+    render();
+  }
+}
+
+function showResults() {
+  document.getElementById('quizCard').classList.add('hide');
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressText').textContent = `Completed! ${score} / ${questions.length} correct`;
+
+  const pct = Math.round((score / questions.length) * 100);
+  let emoji, title, message;
+
+  if (pct === 100) {
+    emoji = '🌟'; title = 'Perfect Score!';
+    message = '"It was hard, but it made me strong." — Just like the narrator, you showed real strength today!';
+  } else if (pct >= 75) {
+    emoji = '🌙'; title = 'Well Done!';
+    message = '"I learned an important lesson that night." — You understood the story well. Keep reading!';
+  } else if (pct >= 50) {
+    emoji = '⭐'; title = 'Good Try!';
+    message = '"I believe everything happens for a reason." — Read the story again and try once more!';
+  } else {
+    emoji = '📖'; title = 'Keep Practising!';
+    message = '"Two years later… I built a good life." — Read the story carefully and try again. You can do it!';
+  }
+
+  const wrongAnswers = userAnswers.filter(a => !a.correct);
+  const reviewHTML = wrongAnswers.length > 0
+    ? `<div class="review-title">Review these questions</div>
+       <div class="review-list">
+         ${wrongAnswers.map(a => `
+           <div class="review-item">
+             <span class="review-icon">❌</span>
+             <span><strong>${a.q}</strong><br>Answer: ${a.correctAnswer}</span>
+           </div>`).join('')}
+       </div>`
+    : '';
+
+  const results = document.getElementById('results');
+  results.innerHTML = `
+    <div class="score-emoji">${emoji}</div>
+    <div class="score-title">${title}</div>
+    <div class="score-num">${score}/${questions.length}</div>
+    <div class="score-label">${pct}% correct</div>
+    <div class="score-message">${message}</div>
+    ${reviewHTML}
+    <button class="restart-btn" onclick="restart()">🔄 Try Again</button>
+  `;
+  results.classList.add('show');
+}
+
+function restart() {
+  current = 0;
+  score = 0;
+  answered = false;
+  userAnswers = [];
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('quizCard').classList.remove('hide');
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
